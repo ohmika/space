@@ -8852,6 +8852,20 @@ var acceptButton = document.getElementById('accept');
 
 acceptButton.addEventListener('click', start, false);
 
+var shakeBtn = document.getElementById('shakeBtn');
+shakeBtn.addEventListener('click', function() {
+  autoShake = !autoShake;
+  shakeBtn.textContent = autoShake ? 'Stop' : 'Shake';
+  shakeBtn.className = autoShake ? 'on' : '';
+  if (autoShake) {
+    clearTimeout(hintTimeout);
+    document.getElementById('shake').style.display = 'none';
+  } else {
+    targetMousePos.x = view.size.width/2;
+    targetMousePos.y = view.size.height-segmentLength;
+  }
+}, false);
+
 var hintTimeout;
 
 var restDrag = 0.8;
@@ -8872,6 +8886,7 @@ var supports2 = [];
 var springs = [];
 
 var mouseDown = false;
+var autoShake = false;
 
 var firstPlay = true;
 var frameCount = 0;
@@ -8986,6 +9001,11 @@ function start() {
   setInterval(function() {
     physics.gravity.x = Math.sin(Date.now()/4000)*0.4;
     physics.gravity.y =  Math.sin(Date.now()/6000)*0.4 - 3
+    if (autoShake) {
+      var sa = -Math.PI/2 + Math.sin(Date.now()/40) * 1.2;
+      targetMousePos.x = view.size.width/2 + Math.cos(sa) * segmentLength*3;
+      targetMousePos.y = view.size.height + Math.sin(sa) * segmentLength;
+    }
     updateAppearance();
     setPositions();
     physics.tick(1.0);
@@ -9167,6 +9187,7 @@ function setPositions() {
 
   }
 
+  if (autoShake) targetStress = Math.max(targetStress, 350);
   stress += (targetStress-stress)*0.03;
 
 }
@@ -9430,6 +9451,26 @@ canvas {
   color: #000;
 }
 
+
+#shakeBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 3;
+  padding: 19px 35px;
+  font: bold 21px sans-serif;
+  background: #000;
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  outline-offset: -2px;
+  outline: 4px solid transparent;
+  touch-action: manipulation;
+}
+#shakeBtn:hover { outline: 4px solid #000; background: transparent; color: #000; }
+#shakeBtn.on { background: #f03; }
+#shakeBtn.on:hover { background: transparent; color: #f03; outline-color: #f03; }
+
 </style>
 
   <title>Staggering Beauty</title>
@@ -9447,8 +9488,10 @@ canvas {
     </div>
 
   <div id="shake">
-    Shake vigorously
+    Press the button
   </div>
+
+  <button id="shakeBtn" type="button">Shake</button>
 
   <div id="splash">
     <div id="accept">
